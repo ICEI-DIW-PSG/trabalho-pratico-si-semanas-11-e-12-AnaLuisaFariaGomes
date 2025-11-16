@@ -1,4 +1,4 @@
-{ 
+const dadosLiterarios = {
   "autores": [
     {
       "id": 1,
@@ -241,4 +241,275 @@
       ]
     }
   ]
+};
+
+//JavaScript
+//cards responsivos das obras
+function carregaAutor() {
+  const autoresContainer = document.getElementById("autoresContainer");
+  if (!autoresContainer || !dadosLiterarios || !dadosLiterarios.autores) return;
+
+  autoresContainer.innerHTML = "";
+
+  for (let i = 0; i < dadosLiterarios.autores.length; i++) {
+    const autor = dadosLiterarios.autores[i];
+    const card = `
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <div class="card h-100 mb-4 shadow-sm">
+          <img src="${autor.img}" class="card-img-top mx-auto d-block" alt="${autor.nome}" style="max-height: 150px; object-fit: cover;">
+          <div class="card-body p-2">
+            <h5 class="card-title text-center mb-2">${autor.nome}</h5>
+            <div class="text-center mt-2">
+              <a href="detalhes.html?id=${autor.id}" class="btn btn-primary btn-sm">Ver detalhes</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    autoresContainer.innerHTML += card;
+  }
+}
+
+//cards responsivos das obras
+function carregaObras() {
+  const container = document.getElementById("obrasContainer");
+  container.innerHTML = "";
+
+  for (let i = 0; i < dadosLiterarios.autores.length; i++) {
+    const autor = dadosLiterarios.autores[i];
+    for (let j = 0; j < autor.obras.length; j++) {
+      const obra = autor.obras[j];
+      const card = `
+        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+          <div class="card h-100 mb-4 shadow-sm">
+            <img src="${obra.img}" class="card-img-top mx-auto d-block" alt="${obra.titulo}" style="max-height: 150px; object-fit: cover;">
+            <div class="card-body p-2">
+              <h5 class="card-title text-center mb-2">${obra.titulo}</h5>
+              <p class="text-center mb-2"><strong>Autor:</strong> ${autor.nome}</p>
+              <div class="text-center mt-2">
+                <a href="detalhes.html?id=${obra.id}" class="btn btn-primary btn-sm">Ver detalhes</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += card;
+    }
+  }
+}
+
+//mostra os detalhes do autor
+function carregaDetalhes() {
+  const container = document.getElementById("detalhesContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = parseInt(urlParams.get("id"));
+  if (isNaN(id)) {
+    container.innerHTML = "<p>ID inválido.</p>";
+    return;
+  }
+
+  let autor = null;
+  for (let i = 0; i < dadosLiterarios.autores.length; i++) {
+    if (dadosLiterarios.autores[i].id === id) {
+      autor = dadosLiterarios.autores[i];
+      break;
+    }
+  }
+
+  if (!autor) {
+    container.innerHTML = "<p>Autor não encontrado.</p>";
+    return;
+  }
+
+  let autorHTML = `
+    <section class="autor-detalhes mb-5">
+      <div class="row align-items-center">
+        <div class="col-md-4 text-center">
+          <img src="${autor.img}" alt="${autor.nome}" class="card-img-top mx-auto d-block">
+        </div>
+        <div class="col-md-8">
+          <h2 class="fw-bold mb-3">${autor.nome}</h2>
+          <p><strong>Data de nascimento:</strong> ${autor.data_nascimento}</p>
+          <p><strong>Cidade natal:</strong> ${autor.cidade_nascimento} - ${autor.estado_nascimento}</p>
+          <p><strong>Gênero de escrita:</strong> ${autor.genero_escrita}</p>
+          <p><strong>Nacionalidade:</strong> ${autor.nacionalidade}</p>
+          <p class="mt-3">${autor.biografia}</p>
+        </div>
+      </div>
+    </section>
+  `;
+
+  let obrasHTML = "";
+  for (let j = 0; j < autor.obras.length; j++) {
+    const obra = autor.obras[j];
+    obrasHTML += `
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <div class="card h-100 shadow-sm obra-card" onclick="abrirObra(${obra.id})">
+          <img src="${obra.img}" class="card-img-top mx-auto d-block" alt="${obra.titulo}">
+          <div class="card-body">
+            <h5 class="card-title">${obra.titulo}</h5>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  const obrasSection = `
+    <section>
+      <h4 class="fw-semibold mb-3">Obras</h4>
+      <div class="row">${obrasHTML}</div>
+    </section>
+  `;
+
+  container.innerHTML = autorHTML + obrasSection + `
+    <div class="text-start mt-4">
+      <button class="btn btn-secondary" onclick="window.history.back()">Voltar</button>
+    </div>
+  `;
+}
+
+//abre a pagina de detalhes da obra
+function abrirObra(id) {
+  window.location.href = `detalhes.html?id=${id}`;
+}
+
+//mostra os detalhes da obra
+function carregaDetalhesObra() {
+  const container = document.getElementById("detalhesObraContainer");
+  container.innerHTML = "";
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = parseInt(urlParams.get("id"));
+
+  let obraEncontrada = null;
+  let autorEncontrado = null;
+
+  for (let i = 0; i < dadosLiterarios.autores.length; i++) {
+    const autor = dadosLiterarios.autores[i];
+    for (let j = 0; j < autor.obras.length; j++) {
+      const obra = autor.obras[j];
+      if (obra.id === id) {
+        obraEncontrada = obra;
+        autorEncontrado = autor;
+        break;
+      }
+    }
+    if (obraEncontrada) break;
+  }
+
+  if (!obraEncontrada) {
+    container.innerHTML = "<p>Obra não encontrada.</p>";
+    return;
+  }
+
+  let personagensHTML = "";
+  if (obraEncontrada.personagens_principais && obraEncontrada.personagens_principais.length > 0) {
+    personagensHTML = `<p><strong>Personagens principais:</strong> ${obraEncontrada.personagens_principais.join(", ")}</p>`;
+  }
+
+  const obraHTML = `
+    <section class="obra-detalhes mb-5">
+      <div class="row align-items-center">
+        <div class="col-md-4 text-center">
+          <img src="${obraEncontrada.img}" alt="${obraEncontrada.titulo}" class="card-img-top mx-auto d-block">
+        </div>
+        <div class="col-md-8">
+          <h2 class="fw-bold mb-3">${obraEncontrada.titulo}</h2>
+          <p><strong>Autor:</strong> ${autorEncontrado.nome}</p>
+          <p><strong>Ano de publicação:</strong> ${obraEncontrada.ano_publicacao}</p>
+          ${personagensHTML}
+          <p class="mt-3">${obraEncontrada.sinopse}</p>
+        </div>
+      </div>
+    </section>
+    <div class="text-start mt-4">
+      <button class="btn btn-secondary" onclick="window.history.back()">Voltar</button>
+    </div>
+  `;
+
+  container.innerHTML = obraHTML;
+}
+
+//verifica pelo id se se trata de um autor ou de uma obra
+function verificaTipoID(id) {
+  for (let i = 0; i < dadosLiterarios.autores.length; i++) {
+    if (dadosLiterarios.autores[i].id === id) {
+      return "autor";
+    }
+    for (let j = 0; j < dadosLiterarios.autores[i].obras.length; j++) {
+      if (dadosLiterarios.autores[i].obras[j].id === id) {
+        return "obra";
+      }
+    }
+  }
+  return "desconhecido";
+}
+
+//DOM pag. detalhes
+document.addEventListener("DOMContentLoaded", function () {
+  const id = parseInt(new URLSearchParams(window.location.search).get("id"));
+  const type = verificaTipoID(id);
+  const container = document.getElementById("detalhesContainer");
+
+  if (type === "autor") {
+    carregaDetalhes();
+  } else if (type === "obra") {
+    carregaDetalhesObra();
+  } else {
+    container.innerHTML = "<p>ID não encontrado.</p>";
+  }
+});
+
+
+//carrosel destaque
+function carregaAutoresDestaque() {
+  const container = document.getElementById("carouselAutores");
+  const indicadores = document.querySelector(".carousel-indicators");
+  container.innerHTML = "";
+  indicadores.innerHTML = "";
+
+  const autoresDestaque = [];
+  for (let i = 0; i < dadosLiterarios.autores.length; i++) {
+    const autor = dadosLiterarios.autores[i];
+    if (autor.destaque === true) {
+      autoresDestaque.push(autor);
+    }
+  }
+
+  for (let i = 0; i < autoresDestaque.length; i++) {
+    const autor = autoresDestaque[i];
+    let ativo = "";
+    if (i === 0) {
+      ativo = "active";
+    } else {
+      ativo = "";
+    }
+
+    const slide = `
+      <div class="carousel-item ${ativo}">
+        <div class="card card-destaque shadow-sm">
+          <div class="row g-0 align-items-center">
+            <div class="col-md-4 text-center d-flex justify-content-center align-items-center">
+              <img src="${autor.img}" class="img-fluid rounded-start" alt="${autor.nome}" style="max-height: 350px; object-fit: cover;">
+            </div>
+            <div class="col-md-8 d-flex align-items-center">
+              <div class="card-body bg-white p-2 rounded-end">
+                <h5 class="card-title">${autor.nome}</h5>
+                <p class="card-text">${autor.biografia}</p>
+                <a href="detalhes.html?id=${autor.id}" class="btn btn-primary mt-2">Ver detalhes</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const indicador = `<button type="button" data-bs-target="#destaquesCarousel" data-bs-slide-to="${i}" class="${ativo}" aria-label="Slide ${i + 1}"></button>`;
+
+    container.innerHTML += slide;
+    indicadores.innerHTML += indicador;
+  }
 }
